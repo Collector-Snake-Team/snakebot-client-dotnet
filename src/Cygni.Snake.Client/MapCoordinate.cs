@@ -31,6 +31,19 @@ namespace Cygni.Snake.Client
             return GetManhattanDistanceTo(new MapCoordinate(x, y));
         }
 
+        public double GetBirdDistanceTo(MapCoordinate other)
+        {
+            var xDiff = X - other.X;
+            var yDiff = Y - other.Y;
+
+            return Math.Sqrt(xDiff * xDiff + yDiff * yDiff);
+        }
+
+        public double GetAreaDistanceTo(MapCoordinate other)
+        {
+            return (Math.Abs(X - other.X) + 1) * (Math.Abs(Y - other.Y) + 1);
+        }
+
         public bool IsInsideMap(int width, int height)
         {
             return X >= 0 && Y >= 0 && X < width && Y < height;
@@ -39,6 +52,27 @@ namespace Cygni.Snake.Client
         protected bool Equals(MapCoordinate other)
         {
             return X == other.X && Y == other.Y;
+        }
+
+        public static bool operator ==(MapCoordinate a, MapCoordinate b)
+        {
+            if (ReferenceEquals(a, b))
+                return true;
+            
+            if (((object)a == null) || ((object)b == null))
+                return false;
+
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(MapCoordinate a, MapCoordinate b)
+        {
+            return !(a == b);
+        }
+
+        public override string ToString()
+        {
+            return $"({X},{Y})";
         }
 
         public override bool Equals(object obj)

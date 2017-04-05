@@ -8,7 +8,7 @@ namespace Cygni.Snake.Client.Tests
     {
         [Theory]
         [InlineData(Direction.Up, DirectionalResult.Death)]
-        [InlineData(Direction.Right, DirectionalResult.Points)]
+        [InlineData(Direction.Right, DirectionalResult.Food)]
         [InlineData(Direction.Left, DirectionalResult.Death)]
         [InlineData(Direction.Down, DirectionalResult.Death)]
         public void GetResultOfDirection_ReturnsExpectedResult(Direction direction, DirectionalResult result)
