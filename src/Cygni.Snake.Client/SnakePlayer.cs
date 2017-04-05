@@ -26,6 +26,8 @@ namespace Cygni.Snake.Client
 
         public MapCoordinate HeadPosition => IsAlive ? Positions.First() : new MapCoordinate(-1, -1);
 
+        public MapCoordinate TailPosition => IsAlive ? Positions[Positions.Count - 1] : new MapCoordinate(-1, -1);
+
         public IEnumerable<MapCoordinate> Body => IsAlive ? Positions.Skip(1) : Enumerable.Empty<MapCoordinate>();
 
         public Direction CurrentDirection
@@ -36,7 +38,7 @@ namespace Cygni.Snake.Client
                 var neck = Body.FirstOrDefault() ?? head;
                 foreach (Direction direction in Enum.GetValues(typeof(Direction)))
                 {
-                    if (neck.GetDestination(direction).Equals(head))
+                    if (neck.GetDestination(direction) == head)
                     {
                         return direction;
                     }

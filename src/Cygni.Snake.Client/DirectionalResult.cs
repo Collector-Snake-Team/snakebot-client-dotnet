@@ -3,7 +3,9 @@
     public enum DirectionalResult
     {
         Nothing,
-        Points,
-        Death
+        Food,
+        Death,
+        Danger,
+        TailNibble
     }
 }

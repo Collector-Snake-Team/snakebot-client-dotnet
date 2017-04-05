@@ -11,9 +11,21 @@ namespace Cygni.Snake.Client
         {
             Tick = worldTick;
             MySnake = mySnake;
-            FoodPositions = foodPositions.ToList();
-            ObstaclePositions = obstaclePositions.ToList();
+            FoodPositions = new HashSet<MapCoordinate>(foodPositions);
+            ObstaclePositions = new HashSet<MapCoordinate>(obstaclePositions);
             Snakes = snakeInfos.ToList();
+            OpponentSnakes = Snakes.Where(s => s.Id != MySnake.Id).ToList();
+
+            TileGrid = new TileGridBuilder(width, height)
+                .WithFood(FoodPositions)
+                .WithObstacles(ObstaclePositions)
+                .WithMySnake(MySnake)
+                .WithOpponentSnakes(OpponentSnakes)
+                .WithOpponentHeadNeighbors(OpponentSnakes)
+                .Build();
+
+            OpponentsTailsPositions = OpponentSnakes.Where(s => s.IsAlive)
+                                                   .ToDictionary(s => s.TailPosition, s => s);
 
             Width = width;
             Height = height;
@@ -25,7 +37,17 @@ namespace Cygni.Snake.Client
 
         public int Tick { get; }
 
+        public IDictionary<MapCoordinate, TileType> TileGrid { get; }
+
+        public TileType this[MapCoordinate mapCoordinate] => TileGrid.ContainsKey(mapCoordinate) ? TileGrid[mapCoordinate] : TileType.OutOfBounds;
+
+        public bool IsDanger(MapCoordinate mapCoordinate) => this[mapCoordinate].IsDanger();
+
+        public bool IsSafe(MapCoordinate mapCoordinate) => this[mapCoordinate].IsSafe();
+
         public IReadOnlyList<SnakePlayer> Snakes { get; }
+
+        public IReadOnlyList<SnakePlayer> OpponentSnakes { get; }
 
         public SnakePlayer MySnake { get; }
 
@@ -34,16 +56,18 @@ namespace Cygni.Snake.Client
             return Snakes.FirstOrDefault(s => s.Id.Equals(id, StringComparison.Ordinal));
         }
 
-        public IReadOnlyList<MapCoordinate> FoodPositions { get; }
+        public ISet<MapCoordinate> FoodPositions { get; }
 
-        public IReadOnlyList<MapCoordinate> ObstaclePositions { get; }
+        public ISet<MapCoordinate> ObstaclePositions { get; }
+
+        public IReadOnlyDictionary<MapCoordinate, SnakePlayer> OpponentsTailsPositions { get; }
 
         public IEnumerable<MapCoordinate> SnakeHeads
         {
             get
             {
                 return Snakes.Where(snake => snake.IsAlive)
-                    .Select(snake => snake.HeadPosition);
+                             .Select(snake => snake.HeadPosition);
             }
         }
 
@@ -63,28 +87,50 @@ namespace Cygni.Snake.Client
             }
         }
 
+        public DirectionalResult GetResultOfMyDirection(Direction dir)
+        {
+            var target = MySnake.HeadPosition.GetDestination(dir);
+
+            switch (this[target])
+            {
+                case TileType.Food:
+                    return DirectionalResult.Food;
+                case TileType.Empty:
+                    return DirectionalResult.Nothing;
+                case TileType.OpponentHeadNeighbor:
+                    return DirectionalResult.Danger;
+                case TileType.OpponentTail:
+                    return Tick % 3 == 0 ? DirectionalResult.TailNibble : DirectionalResult.Nothing;
+                default:
+                    return DirectionalResult.Death;
+            }
+        }
+
         public DirectionalResult GetResultOfDirection(string playerId, Direction dir)
         {
-            var mySnake = GetSnake(playerId);
-            if (mySnake == null)
+            var snake = GetSnake(playerId);
+            if (snake == null)
             {
                 throw new ArgumentException($"No snake with id: {playerId}");
             }
 
-            var myHead = mySnake.Positions.First();
-            var target = myHead.GetDestination(dir);
+            var target = snake.HeadPosition.GetDestination(dir);
 
-            if (IsSnake(target) || IsObstace(target) || !target.IsInsideMap(Width, Height))
+            switch (this[target])
             {
-                return DirectionalResult.Death;
+                case TileType.Food:
+                    return DirectionalResult.Food;
+                case TileType.Empty:
+                case TileType.OpponentHeadNeighbor:
+                    return DirectionalResult.Nothing;
+                default:
+                    return DirectionalResult.Death;
             }
-
-            return IsFood(target) ? DirectionalResult.Points : DirectionalResult.Nothing;
         }
 
-        public bool IsObstace(MapCoordinate coordinate)
+        public bool IsObstacle(MapCoordinate coordinate)
         {
-            return ObstaclePositions.Contains(coordinate);
+            return this[coordinate] == TileType.Obstacle;
         }
 
         public bool IsSnake(MapCoordinate coordinate)
@@ -94,7 +140,7 @@ namespace Cygni.Snake.Client
 
         public bool IsFood(MapCoordinate coordinate)
         {
-            return FoodPositions.Contains(coordinate);
+            return this[coordinate] == TileType.Food;
         }
 
         public bool AbleToUseDirection(string playerId, Direction dir)
