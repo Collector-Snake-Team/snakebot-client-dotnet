@@ -31,7 +31,7 @@ namespace Cygni.Snake.Client
             return GetManhattanDistanceTo(new MapCoordinate(x, y));
         }
 
-        public double GetBirdDistanceTo(MapCoordinate other)
+        public double GetEuclideanDistanceTo(MapCoordinate other)
         {
             var xDiff = X - other.X;
             var yDiff = Y - other.Y;

@@ -24,7 +24,7 @@ namespace Cygni.Snake.Client
                 .WithOpponentHeadNeighbors(OpponentSnakes)
                 .Build();
 
-            OponentsTailsPositions = OpponentSnakes.Where(s => s.IsAlive)
+            OpponentsTailsPositions = OpponentSnakes.Where(s => s.IsAlive)
                                                    .ToDictionary(s => s.TailPosition, s => s);
 
             Width = width;
@@ -60,7 +60,7 @@ namespace Cygni.Snake.Client
 
         public ISet<MapCoordinate> ObstaclePositions { get; }
 
-        public IReadOnlyDictionary<MapCoordinate, SnakePlayer> OponentsTailsPositions { get; }
+        public IReadOnlyDictionary<MapCoordinate, SnakePlayer> OpponentsTailsPositions { get; }
 
         public IEnumerable<MapCoordinate> SnakeHeads
         {
@@ -96,10 +96,11 @@ namespace Cygni.Snake.Client
                 case TileType.Food:
                     return DirectionalResult.Food;
                 case TileType.Empty:
-                case TileType.OpponentHeadNeighbor:
                     return DirectionalResult.Nothing;
+                case TileType.OpponentHeadNeighbor:
+                    return DirectionalResult.Danger;
                 case TileType.OpponentTail:
-                    return Tick % 3 == 0 ? DirectionalResult.TailNibble : DirectionalResult.Death;
+                    return Tick % 3 == 0 ? DirectionalResult.TailNibble : DirectionalResult.Nothing;
                 default:
                     return DirectionalResult.Death;
             }
@@ -127,7 +128,7 @@ namespace Cygni.Snake.Client
             }
         }
 
-        public bool IsObstace(MapCoordinate coordinate)
+        public bool IsObstacle(MapCoordinate coordinate)
         {
             return this[coordinate] == TileType.Obstacle;
         }

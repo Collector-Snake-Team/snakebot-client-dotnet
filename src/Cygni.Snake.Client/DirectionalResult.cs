@@ -5,6 +5,7 @@
         Nothing,
         Food,
         Death,
+        Danger,
         TailNibble
     }
 }
