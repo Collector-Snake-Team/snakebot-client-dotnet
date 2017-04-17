@@ -13,8 +13,8 @@
         {
             _tileGrid = new Dictionary<MapCoordinate, TileType>();
 
-            for (var x = 0; x < width - 1; x++)
-            for (var y = 0; y < height - 1; y++)
+            for (var x = 0; x < width; x++)
+            for (var y = 0; y < height; y++)
                 _tileGrid[new MapCoordinate(x, y)] = TileType.Empty;
         }
 
