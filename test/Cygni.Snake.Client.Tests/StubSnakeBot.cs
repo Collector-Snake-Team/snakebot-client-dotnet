@@ -19,9 +19,9 @@ namespace Cygni.Snake.Client.Tests
         {
         }
 
-        public override Direction GetNextMove(Map map)
+        public override Direction GetNextMove()
         {
-            return _nextMove(map);
+            return _nextMove(Map);
         }
     }
 }

@@ -18,6 +18,19 @@
         protected SnakeBot(string name)
         {
             Name = name;
+            BackupBot = new DefaultBackupBot();
+        }
+
+        /// <summary>
+        /// Initializes a new instanse of the <see cref="SnakeBot"/> class
+        /// with the specified name.
+        /// </summary>
+        /// <param name="name">The specified name.</param>
+        /// <param name="backupBot">A backup algorithm to use when the first one results in certain death.</param>
+        protected SnakeBot(string name, SnakeBot backupBot)
+        {
+            Name = name;
+            BackupBot = backupBot;
         }
 
         /// <summary>
@@ -33,6 +46,8 @@
 
         protected Map Map { get; private set; }
 
+        protected SnakeBot BackupBot { get; }
+
         /// <summary>
         /// When overriden in a derived class, gets the <see cref="Direction"/>
         /// in which this bot wants to move based on the specified <see cref="Map"/> in the Map property.
@@ -47,24 +62,14 @@
             {
                 var nextMove = GetNextMove();
 
-                if (Map.GetResultOfMyDirection(nextMove) == DirectionalResult.Death)
-                    return FallbackMove;
+                if (BackupBot != null && Map.GetResultOfMyDirection(nextMove) == DirectionalResult.Death)
+                    return BackupBot.GetNextMove(Map);
 
                 return nextMove;
             }
             catch (Exception)
             {
-                return FallbackMove;
-            }
-        }
-
-        protected virtual Direction FallbackMove
-        {
-            get
-            {
-                return Directions.All.Select(d => new { Direction = d, DirectionalResult = Map.GetResultOfMyDirection(d) })
-                                 .OrderBy(r => r.DirectionalResult)
-                                 .First().Direction;
+                return BackupBot?.GetNextMove(Map) ?? Map.MySnake.CurrentDirection;
             }
         }
     }
