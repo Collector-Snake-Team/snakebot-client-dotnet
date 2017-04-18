@@ -47,24 +47,24 @@
             {
                 var nextMove = GetNextMove();
 
-                if (Map.GetResultOfMyDirection(nextMove) != DirectionalResult.Death)
-                    return nextMove;
+                if (Map.GetResultOfMyDirection(nextMove) == DirectionalResult.Death)
+                    return FallbackMove;
 
-                return SimpleNonDeathMove ?? nextMove;
+                return nextMove;
             }
             catch (Exception)
             {
-                return SimpleNonDeathMove ?? Map.MySnake.CurrentDirection;
+                return FallbackMove;
             }
         }
 
-        protected virtual Direction? SimpleNonDeathMove
+        protected virtual Direction FallbackMove
         {
             get
             {
                 return Directions.All.Select(d => new { Direction = d, DirectionalResult = Map.GetResultOfMyDirection(d) })
-                                 .FirstOrDefault(r => r.DirectionalResult != DirectionalResult.Death)
-                                 ?.Direction;
+                                 .OrderBy(r => r.DirectionalResult)
+                                 .First().Direction;
             }
         }
     }

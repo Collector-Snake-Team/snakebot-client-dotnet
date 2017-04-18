@@ -2,10 +2,10 @@
 {
     public enum DirectionalResult
     {
-        Nothing,
-        Food,
-        Death,
-        Danger,
-        TailNibble
+        Food = 1,
+        Nothing = 2,
+        TailNibble = 3,
+        Danger = 4,
+        Death = 5,
     }
 }
