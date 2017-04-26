@@ -1,5 +1,8 @@
 ﻿namespace Cygni.Snake.Client
 {
+    using System;
+    using System.Linq;
+
     /// <summary>
     /// Represents an object that contains logic for choosing which 
     /// direction a <see cref="SnakePlayer"/> should move given the
@@ -15,6 +18,19 @@
         protected SnakeBot(string name)
         {
             Name = name;
+            BackupBot = new DefaultBackupBot();
+        }
+
+        /// <summary>
+        /// Initializes a new instanse of the <see cref="SnakeBot"/> class
+        /// with the specified name.
+        /// </summary>
+        /// <param name="name">The specified name.</param>
+        /// <param name="backupBot">A backup algorithm to use when the first one results in certain death.</param>
+        protected SnakeBot(string name, SnakeBot backupBot)
+        {
+            Name = name;
+            BackupBot = backupBot;
         }
 
         /// <summary>
@@ -28,12 +44,33 @@
         /// </summary>
         public bool AutoStart { get; set; }
 
+        protected Map Map { get; private set; }
+
+        protected SnakeBot BackupBot { get; }
+
         /// <summary>
         /// When overriden in a derived class, gets the <see cref="Direction"/>
-        /// in which this bot wants to move based on the specified <see cref="Map"/>.
+        /// in which this bot wants to move based on the specified <see cref="Map"/> in the Map property.
         /// </summary>
-        /// <param name="map">The specified <see cref="Map"/>, represents the current state of the game.</param>
         /// <returns>The desired direction.</returns>
-        public abstract Direction GetNextMove(Map map);
+        public abstract Direction GetNextMove();
+
+        public Direction GetNextMove(Map map)
+        {
+            Map = map;
+            try
+            {
+                var nextMove = GetNextMove();
+
+                if (BackupBot != null && Map.GetResultOfMyDirection(nextMove) == DirectionalResult.Death)
+                    return BackupBot.GetNextMove(Map);
+
+                return nextMove;
+            }
+            catch (Exception)
+            {
+                return BackupBot?.GetNextMove(Map) ?? Map.MySnake.CurrentDirection;
+            }
+        }
     }
 }

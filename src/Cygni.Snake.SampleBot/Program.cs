@@ -7,7 +7,17 @@ namespace Cygni.Snake.SampleBot
     {
         public static void Main(string[] args)
         {
-            var client = SnakeClient.Connect(new Uri("ws://snake.cygni.se:80/training"), new GamePrinter());
+            var training = true;
+            var serverUri = new Uri("ws://snake.cygni.se:80");
+
+
+            if(training)
+                serverUri = new Uri(serverUri, "training");
+            else
+                serverUri = new Uri(serverUri, "tournament");
+
+
+            var client = SnakeClient.Connect(serverUri, new OpenBrowser());
             client.Start(new MySnakeBot("dotnetSnake")
             {
                 AutoStart = false
