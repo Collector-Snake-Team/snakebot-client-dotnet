@@ -65,5 +65,20 @@
                     throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
             }
         }
+
+        public static IEnumerable<Direction> Turn(this Direction direction)
+        {
+            switch (direction)
+            {
+                case Direction.Up:
+                case Direction.Down:
+                    return new[] { Direction.Left, Direction.Right };
+                case Direction.Left:
+                case Direction.Right:
+                    return new[] { Direction.Up, Direction.Down };
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
+            }
+        }
     }
 }
