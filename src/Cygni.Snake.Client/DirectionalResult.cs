@@ -1,5 +1,8 @@
 ﻿namespace Cygni.Snake.Client
 {
+    /// <summary>
+    /// These are supposed to be in descending order of preference, when adding new values, please stay true to this rule.
+    /// </summary>
     public enum DirectionalResult
     {
         Food = 1,
